@@ -196,9 +196,9 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: user_id
-            AttributeType: HASH
+            KeyType: HASH
           - AttributeName: timestamp
-            AttributeType: RANGE
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
@@ -279,7 +279,7 @@ exports.handler = async (event) => {
 ```
 so now lets finish off our add note handler
 - this will be a post route and will receive the user data or item attributes in the http request body
-- the userid might send the user iinformation in the request headers rather than the request body
+- the userid might send the user information in the request headers rather than the request body
 - lets write a function to get this information from the request headers
 - getUserID function and getUserName and we can call these whatever we want in the header
 - so now our utils look like this
@@ -327,7 +327,7 @@ our final code looks like this
  */
 
 const AWS = require('aws-sdk');
-AWS.config.update({ region: 'us-west-2' });
+AWS.config.update({ region: 'ap-southeast-2' });
 
 const moment = require('moment');
 const uuidv4 = require('uuid/v4');
@@ -384,7 +384,7 @@ exports.handler = async (event) => {
  */
 
 const AWS = require('aws-sdk');
-AWS.config.update({ region: 'us-west-2' });
+AWS.config.update({ region: 'ap-southeast-2' });
 
 const moment = require('moment');
 const util = require('./util.js');
@@ -436,7 +436,7 @@ exports.handler = async (event) => {
 - then limit is the query or set the default limit to the 
 - then we specify the params
 - table name
-- the keyCOnditionalExpression, this is like the where clause for the query so we can say user_id = :uid
+- the keyConditionalExpression, this is like the where clause for the query so we can say user_id = :uid
 - we define the value of :uid using expression attribute values 
 - :uid = user_id
 - limit is limit
@@ -454,7 +454,7 @@ our final code looks like this
  */
 
 const AWS = require('aws-sdk');
-AWS.config.update({ region: 'us-west-2' });
+AWS.config.update({ region: 'ap-southeast-2' });
 
 const util = require('./util.js');
 
@@ -506,7 +506,61 @@ exports.handler = async (event) => {
     }
 }
 ```
+and if we want to add a handler to get a single note
+```
+/**
+ * Route: GET /note/n/{note_id}
+ */
 
+const AWS = require('aws-sdk');
+AWS.config.update({ region: 'ap-southeast-2' });
+
+const _ = require('underscore');
+const util = require('./util.js');
+
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+const tableName = process.env.NOTES_TABLE;
+
+exports.handler = async (event) => {
+    try {
+        let note_id = decodeURIComponent(event.pathParameters.note_id);
+
+        let params = {
+            TableName: tableName,
+            IndexName: "note_id-index",
+            KeyConditionExpression: "note_id = :note_id",
+            ExpressionAttributeValues: {
+                ":note_id": note_id
+            },
+            Limit: 1
+        };
+
+        let data = await dynamodb.query(params).promise();
+        if(!_.isEmpty(data.Items)) {
+            return {
+                statusCode: 200,
+                headers: util.getResponseHeaders(),
+                body: JSON.stringify(data.Items[0])
+            };
+        } else {
+            return {
+                statusCode: 404,
+                headers: util.getResponseHeaders()
+            };
+        }      
+    } catch (err) {
+        console.log("Error", err);
+        return {
+            statusCode: err.statusCode ? err.statusCode : 500,
+            headers: util.getResponseHeaders(),
+            body: JSON.stringify({
+                error: err.name ? err.name : "Exception",
+                message: err.message ? err.message : "Unknown error"
+            })
+        };
+    }
+}
+```
 so we can define our resources in our serverless.yml
 
 - first we need serverless-offline
@@ -520,13 +574,12 @@ code in now this
 ```
 provider:
   name: aws
-  runtime: nodejs8.10
-  region: us-west-2
-  stage: prod
+  runtime: nodejs10.x
+  region: ap-southeast-2
+  stage: dev
   memorySize: 128
-  timeout: 5
-  endpointType: regional
-  environment:
+  timeout: 3
+  environment: 
     NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
@@ -558,3 +611,67 @@ now we are ready to define our lambda functions and the corresponding endpoints
 - if we get a response back it should be good
 - now lets look in the dynamo db table and it should be there
 - we we get all notes we can look at last evaluated key if we want to do pagination
+
+so we add custom properties like this
+```
+custom:
+  allowedHeaders:
+    - Accept
+    - Content-Type
+    - Content-Length
+    - Authorization
+    - X-Amz-Date
+    - X-Api-Key
+    - X-Amz-Security-Token
+    - X-Amz-User-Agent
+    - app_user_id
+    - app_user_name
+```
+
+and our functions now look like this
+```
+functions:
+  add-note:
+    handler: api/add-note.handler
+    description: POST /note
+    events:
+      - http:
+          path: note
+          method: post
+          cors:
+            - origin: '*'
+            - headers: ${self:custom.allowedHeaders}
+
+  update-note:
+    handler: api/update-note.handler
+    description: PATCH /note
+    events:
+      - http:
+          path: note
+          method: patch
+          cors:
+            - origin: '*'
+            - headers: ${self:custom.allowedHeaders}
+
+  get-notes:
+    handler: api/get-notes.handler
+    description: GET /notes
+    events:
+      - http:
+          path: notes
+          method: get
+          cors:
+            - origin: '*'
+            - headers: ${self:custom.allowedHeaders}
+
+  get-note:
+    handler: api/get-note.handler
+    description: GET /note/n/{note_id}
+    events:
+      - http:
+          path: note/n/{note_id}
+          method: get
+          cors:
+            - origin: '*'
+            - headers: ${self:custom.allowedHeaders}
+```
