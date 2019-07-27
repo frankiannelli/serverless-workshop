@@ -16,9 +16,9 @@ sls -v
 lets make an application
 
 ``` 
-mkdir serverless-app 
+mkdir serverless-app && cd "$_"
 
-sls create --template aws-nodejs -n hello-serverless
+sls create --template aws-nodejs -n frankI-serverless-api
 
 ```
 So now we have the serverless.yml which defines our application. Need to talk about how cloudformation templates can be used in this file.
@@ -38,12 +38,12 @@ we can look at commented out sections
 so we can remove this commented code
 ensure that the indentation is correct because the yaml file is sensitive to that
 
-let deploy this
+lets deploy this
 
 ### WHAT IS THE LOGIN STEPS FOR SANDBOX
 
 ```
-sls deploy
+serverless deploy --aws-profile frank
 ```
 
 now lets go to aws and look at cloudformation to see what was generated
@@ -139,6 +139,7 @@ plugins:
 then run 
 `sls offline`
 
+now test on localhost:3000
 
 now lets setup our dynamo db
 `yarn add aws-sdk`
@@ -156,7 +157,7 @@ provider:
 
 now lets define the dynamDB table and we do this in the resources section
 we set the name as our reference
-we set deletion policy so if the stack gets removed we kee the data. 
+we set deletion policy so if the stack gets removed we keep the data. 
 properties sets the table name from the env variable
 then we have attribute definititions. we specify the key attributes to be used for primary and secondary keys.
 for this notes table we can have userid and timestamp as primary key and we can have a global secondary index on the note attribute. so we need to define all these attributes as a list or array
