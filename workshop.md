@@ -63,7 +63,7 @@ sls remove
 ```
 now make adjustments and deploy again
 
-```
+```yaml
 provider:
   name: aws
   runtime: nodejs10.x
@@ -83,7 +83,7 @@ now lets add another lambda function and expose it with a API gateway endpoint
 
 ### WHERE ARE THE DOCS ON THE EVENT OBJECTS
 
-```
+```javascript
 // event.body comes in as a JSON string
 module.exports.add = async (event) => {
   const {num1, num2} = JSON.parse(event.body)
@@ -101,7 +101,7 @@ module.exports.add = async (event) => {
 now we need to add an api gateway event trigger
 in the events we specify what events we want to trigger the function, in this case we just want one api gateway event. we need to specify an array or list, then we specify http, then under that we provide the event properties. specify the path and then because we are sending the data in the request body the method should be post. Lets set cors true which will automatically set the cors headers for the method and also create the options method for the preflight request
 
-```
+```yaml
 functions:
   hello:
     handler: handler.hello
@@ -123,7 +123,7 @@ let test the endpoint with postman by sending a post request
 
 so serverless sets some defaults for the functions that we can overide. we can specify common properties at the provider level
 
-```
+```yaml
 provider:
   name: aws
   runtime: nodejs10.x
@@ -153,7 +153,7 @@ now test on localhost:3000
 now lets setup our dynamo db
 
 we need to add the environment variable for the table name so we can give it a parameterized name
-```
+```yaml
 provider:
   name: aws
   runtime: nodejs10.x
@@ -187,7 +187,7 @@ we are not using a sort key or a range key here
 secondary indexes have a projection type and we will set the projection type to all this will project all the item attributes to this index
 and since this is a global secondary index it will have its own provisoned throughput 
 
-```
+```yaml
 resources:
   Resources:
     NotesTable:
@@ -242,7 +242,7 @@ so if we start with the add note
 - we have to return an http response as we are using the default lambda proxy integration. so we return a response object
 - so we can add our body
 - we need to add headers so let add it as a util function
-```
+```javascript
 const getResponseHeaders = () => 'Access-Control-Allow-Origin': '*'
 
 module.exports = { getResponseHeaders }
@@ -251,7 +251,7 @@ module.exports = { getResponseHeaders }
 - then lets write our response 
 - now we have boilerplate code which looks like this
 - we can paste this code across all the other handlers
-```
+```javascript
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2	' });
 
@@ -287,7 +287,7 @@ so now lets finish off our add note handler
 - lets write a function to get this information from the request headers
 - getUserID function and getUserName and we can call these whatever we want in the header
 - so now our util look like this
-```
+```javascript
 const getUserId = (headers) => headers.app_user_id;
 
 const getUserName = (headers) => headers.app_user_name;
@@ -319,7 +319,7 @@ module.exports = {
 
 
 our final code looks like this
-```
+```javascript
 /**
  * Route: POST /note
  */
@@ -376,7 +376,7 @@ exports.handler = async (event) => {
 - then we convert it to a promise
 - finally we return the updated item data in the http response
 - the final code looks like this
-```
+```javascript
 /**
  * Route: PATCH /note
  */
@@ -446,7 +446,7 @@ exports.handler = async (event) => {
 - finally we call the query method of the document client class. then return the data in the http response
 
 our final code looks like this
-```
+```javascript
 /**
  * Route: GET /notes
  */
@@ -505,7 +505,7 @@ exports.handler = async (event) => {
 }
 ```
 and if we want to add a handler to get a single note
-```
+```javascript
 /**
  * Route: GET /note/n/{note_id}
  */
@@ -569,7 +569,7 @@ so we can define our resources in our serverless.yml
 - resource is the arn of our table we 
 
 code is now this
-```
+```yaml
 provider:
   name: aws
   runtime: nodejs10.x
@@ -611,7 +611,7 @@ now we are ready to define our lambda functions and the corresponding endpoints
 - we we get all notes we can look at last evaluated key if we want to do pagination
 
 so we add custom properties like this
-```
+```yaml
 custom:
   allowedHeaders:
     - Accept
@@ -627,7 +627,7 @@ custom:
 ```
 
 and our functions now look like this
-```
+```yaml
 functions:
   add-note:
     handler: handlers/add-note.handler
