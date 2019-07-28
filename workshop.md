@@ -1,6 +1,8 @@
 ### What is serverless
 
-Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well
+Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
+
+So today we are going to setup a serverless API so save notes. We will setup lambda functions to save the notes in a dynamodb table and we will expose the lambdas as restful endpoints with API gateway.
 
 installing serverless
 
@@ -22,9 +24,13 @@ sls create --template aws-nodejs -n frankI-serverless-api
 
 ```
 we need to install our dependencies
-`yarn add aws-sdk moment uuid`
+```
+yarn add aws-sdk moment uuid
+```
 
-So now we have the serverless.yml which defines our application. Need to talk about how cloudformation templates can be used in this file.
+So now we have the serverless.yml which defines our application. 
+
+*Need to talk about how cloudformation templates can be used in this file.*
 
 we can see the service name is 
 
@@ -46,7 +52,7 @@ lets deploy this
 ### WHAT IS THE LOGIN STEPS FOR SANDBOX
 
 ```
-serverless deploy --aws-profile frank
+serverless deploy --aws-profile domain-sandbox
 ```
 
 now lets go to aws and look at cloudformation to see what was generated
@@ -145,7 +151,6 @@ then run
 now test on localhost:3000
 
 now lets setup our dynamo db
-`yarn add aws-sdk`
 
 we need to add the environment variable for the table name so we can give it a parameterized name
 ```
@@ -231,18 +236,14 @@ so me can make a directory of handlers
 so if we start with the add note
 - lets referecne the AWS SDK
 - setup the region
-- insatntiate a dynamo db class
+- instantiate a dynamo db class
 - get the table name from .env
 - write the lambda handler
 - we have to return an http response as we are using the default lambda proxy integration. so we return a response object
 - so we can add our body
 - we need to add headers so let add it as a util function
 ```
-const getResponseHeaders = () => {
-  return {
-    'Access-Control-Allow-Origin': '*'
-  }
-}
+const getResponseHeaders = () => 'Access-Control-Allow-Origin': '*'
 
 module.exports = { getResponseHeaders }
 ```
@@ -567,7 +568,7 @@ so we can define our resources in our serverless.yml
 - we can say effect allow, then the allowed actions so query put and delete
 - resource is the arn of our table we 
 
-code in now this
+code is now this
 ```
 provider:
   name: aws
