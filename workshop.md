@@ -6,7 +6,7 @@ So today we are going to setup a serverless API so save notes. We will setup lam
 
 installing serverless
 
-```shell
+```
 yarn add -g serverless
 ```
 
