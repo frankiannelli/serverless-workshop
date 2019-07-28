@@ -21,6 +21,9 @@ mkdir serverless-app && cd "$_"
 sls create --template aws-nodejs -n frankI-serverless-api
 
 ```
+we need to install our dependencies
+`yarn add aws-sdk moment uuid`
+
 So now we have the serverless.yml which defines our application. Need to talk about how cloudformation templates can be used in this file.
 
 we can see the service name is 
@@ -251,7 +254,7 @@ module.exports = { getResponseHeaders }
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2	' });
 
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -282,21 +285,15 @@ so now lets finish off our add note handler
 - the userid might send the user information in the request headers rather than the request body
 - lets write a function to get this information from the request headers
 - getUserID function and getUserName and we can call these whatever we want in the header
-- so now our utils look like this
+- so now our util look like this
 ```
-const getUserId = (headers) => {
-    return headers.app_user_id;
-}
+const getUserId = (headers) => headers.app_user_id;
 
-const getUserName = (headers) => {
-    return headers.app_user_name;
-}
+const getUserName = (headers) => headers.app_user_name;
 
-const getResponseHeaders = () => {
-    return {
-        'Access-Control-Allow-Origin': '*'
-    }
-}
+const getResponseHeaders = () => ({
+      'Access-Control-Allow-Origin': '*'
+  })
 
 module.exports = {
     getUserId,
@@ -331,7 +328,7 @@ AWS.config.update({ region: 'ap-southeast-2' });
 
 const moment = require('moment');
 const uuidv4 = require('uuid/v4');
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -387,7 +384,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
 const moment = require('moment');
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -456,7 +453,7 @@ our final code looks like this
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -516,7 +513,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
 const _ = require('underscore');
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -632,7 +629,7 @@ and our functions now look like this
 ```
 functions:
   add-note:
-    handler: api/add-note.handler
+    handler: handlers/add-note.handler
     description: POST /note
     events:
       - http:
@@ -643,7 +640,7 @@ functions:
             - headers: ${self:custom.allowedHeaders}
 
   update-note:
-    handler: api/update-note.handler
+    handler: handlers/update-note.handler
     description: PATCH /note
     events:
       - http:
@@ -654,7 +651,7 @@ functions:
             - headers: ${self:custom.allowedHeaders}
 
   get-notes:
-    handler: api/get-notes.handler
+    handler: handlers/get-notes.handler
     description: GET /notes
     events:
       - http:
@@ -665,7 +662,7 @@ functions:
             - headers: ${self:custom.allowedHeaders}
 
   get-note:
-    handler: api/get-note.handler
+    handler: handlers/get-note.handler
     description: GET /note/n/{note_id}
     events:
       - http:
@@ -674,4 +671,21 @@ functions:
           cors:
             - origin: '*'
             - headers: ${self:custom.allowedHeaders}
+```
+
+we can test with the following request
+```
+POST localhost:3000/note
+
+headers
+app_user_id - test_user
+app_user_name - Test user
+
+{
+	"Item": {
+		"title": "myfirst note",
+		"content": "4234234234234234",
+    "topics": "some extra data"
+	}
+}
 ```

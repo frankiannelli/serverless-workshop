@@ -35,7 +35,7 @@ custom:
 
 functions:
   add-note:
-    handler: api/add-note.handler
+    handler: handlers/add-note.handler
     description: POST /note
     events:
       - http:
@@ -46,7 +46,7 @@ functions:
             - headers: ${self:custom.allowedHeaders}
 
   update-note:
-    handler: api/update-note.handler
+    handler: handlers/update-note.handler
     description: PATCH /note
     events:
       - http:
@@ -57,7 +57,7 @@ functions:
             - headers: ${self:custom.allowedHeaders}
 
   get-notes:
-    handler: api/get-notes.handler
+    handler: handlers/get-notes.handler
     description: GET /notes
     events:
       - http:
@@ -68,7 +68,7 @@ functions:
             - headers: ${self:custom.allowedHeaders}
 
   get-note:
-    handler: api/get-note.handler
+    handler: handlers/get-note.handler
     description: GET /note/n/{note_id}
     events:
       - http:

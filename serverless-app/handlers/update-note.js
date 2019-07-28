@@ -6,7 +6,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
 const moment = require('moment');
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;

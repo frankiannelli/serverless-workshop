@@ -7,7 +7,7 @@ AWS.config.update({ region: 'ap-southeast-2' });
 
 const moment = require('moment');
 const uuidv4 = require('uuid/v4');
-const util = require('./util.js');
+const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -20,6 +20,7 @@ exports.handler = async (event) => {
         item.note_id = item.user_id + ':' + uuidv4()
         item.timestamp = moment().unix();
         item.expires = moment().add(90, 'days').unix();
+        console.log(item)
 
         let data = await dynamodb.put({
             TableName: tableName,
