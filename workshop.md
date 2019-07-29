@@ -1,5 +1,12 @@
 ### What is serverless
 
+### notes
+Workshop questions
+Auction result indexer
+Link to boilerplate
+Check the stack after deploying
+Setup aws cli first as a pre
+
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
 So today we are going to setup a serverless API so save notes. We will setup lambda functions to save the notes in a dynamodb table and we will expose the lambdas as restful endpoints with API gateway.
