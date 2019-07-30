@@ -4,7 +4,7 @@
 
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
-So today we are going to setup a serverless API so save notes. We will setup lambda functions to save the notes in a dynamodb table and we will expose the lambdas as restful endpoints with API gateway.
+So today we are going to setup a serverless API to save notes. We will setup lambda functions to save the notes in a dynamodb table and we will expose the lambdas as restful endpoints with API gateway.
 
 ### setup
 
@@ -29,12 +29,13 @@ mkdir serverless-app && cd "$_"
 sls create --template aws-nodejs -n frankI-serverless-api
 
 ```
-we need to install our dependencies
-```
-yarn add aws-sdk moment uuid
-```
 
 ### Explain the basics
+- So now we have the serverless.yml which defines our application.
+- The Serverless Framework translates all syntax in serverless.yml to a single AWS CloudFormation template 
+- when we deploy it creates a cloudformation template
+- zips the functions
+- compares the hashes of deployed functins and uploads if necessary
 - Declare a Serverless service
 - Define one or more functions in the service
 - Define the provider the service will be deployed to (and the runtime if provided)
@@ -43,11 +44,6 @@ yarn add aws-sdk moment uuid
 - Define a set of resources (e.g. 1 DynamoDB table) required by the functions in this service
 - Allow events listed in the events section to automatically create the resources required for the event upon deployment
 Allow flexible configuration using Serverless Variables
-- So now we have the serverless.yml which defines our application.
-- The Serverless Framework translates all syntax in serverless.yml to a single AWS CloudFormation template 
-- when we deploy it creates a cloudformation template
-- zips the functions
-- compares the hashes of deployed functins and uploads if necessary
 
 we can see the service name is 
 
@@ -116,8 +112,8 @@ functions:
       - http:
         # specify the path
           path: hello
-          # and then because we are sending the data in the request body the method should be post.
-          method: post
+          # get request.
+          method: get
           # Lets set cors true which will automatically set the cors headers for the method and also create the options method for the preflight request
           cors: true
 ```
@@ -126,7 +122,7 @@ now lets deploy
 
 if we go to api gateway we should see the new service
 
-let test the endpoint with postman by sending a post request
+let test the endpoint with postman by sending a get request
 
 so serverless sets some defaults for the functions that we can overide. we can specify common properties at the provider level
 
@@ -147,7 +143,7 @@ for that we use plugins
 specifically serverless-offline plugin emulates AWS λ and API Gateway on your local machine to speed up your development
 
 ```
-npm init
+npm init -y
 
 yarn add --dev serverless-offline
 ```
@@ -247,8 +243,15 @@ no we can go back to finishing the config for the dynamo db
 ```
 now lets deploy
 
+then check its in AWS
+
 ### Add the handlers
 now lets add the handlers to interact with our DB
+
+we need to install our dependencies
+```
+yarn add aws-sdk moment uuid
+```
 
 so we can make a directory of handlers
 - add-note.js
@@ -258,9 +261,7 @@ so we can make a directory of handlers
 // lets referecne the AWS SDK
 const AWS = require('aws-sdk');
 // - setup the region
-AWS.config.update({ region: 'ap-southeast-2	' });
-
-const util = require('../util');
+AWS.config.update({ region: 'ap-southeast-2' });
 
 // - instantiate a dynamo db class
 const dynamodb = new AWS.DynamoDB.DocumentClient();
@@ -274,13 +275,12 @@ exports.handler = async (event) => {
         return {
             statusCode: 200,
 // - so we can add our body
-            body: JSON.stringify('')
+            body: JSON.stringify()
         };
     } catch (err) {
         console.log("Error", err);
         return {
             statusCode: err.statusCode ? err.statusCode : 500,
-            headers: util.getResponseHeaders(),
             body: JSON.stringify({
                 error: err.name ? err.name : "Exception",
                 message: err.message ? err.message : "Unknown error"
@@ -310,9 +310,9 @@ our final code looks like this
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
+// lets add our packages
 const moment = require('moment');
 const uuidv4 = require('uuid/v4');
-const util = require('../util');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
@@ -381,9 +381,8 @@ provider:
       Action: 
         - dynamodb:Query
         - dynamodb:PutItem
-        - dynamodb:DeleteItem
 # - resource is the arn of our table we 
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 ```
 
 ### Add the lambda handlers to serverless.yml
@@ -395,7 +394,7 @@ now we are ready to define our lambda functions and the corresponding endpoints
 functions:
 # - add-note add the handler
   add-note:
-    handler: handlers/add-note.handler
+    handler: add-note.handler
 # - description
     description: POST /note
 # - list the events 
@@ -423,9 +422,12 @@ app_user_name - Test user
 
 {
 	"Item": {
-		"title": "myfirst note",
-		"content": "4234234234234234",
-    "topics": "some extra data"
+		"title": "my note",
+		"user_id": "id1",
+		"user_name": "name",
+		"content": "contenful",
+		"cat": "general"
 	}
 }
 ```
+
