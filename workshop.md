@@ -14,7 +14,7 @@ So today we are going to setup a serverless API so save notes. We will setup lam
 installing serverless
 
 ```
-yarn add -g serverless
+npm install -g serverless
 ```
 
 to check the version
@@ -35,9 +35,11 @@ we need to install our dependencies
 yarn add aws-sdk moment uuid
 ```
 
-So now we have the serverless.yml which defines our application. 
-
-*Need to talk about how cloudformation templates can be used in this file.*
+- So now we have the serverless.yml which defines our application.
+- The Serverless Framework translates all syntax in serverless.yml to a single AWS CloudFormation template 
+- when we deploy it creates a cloudformation template
+- zips the functions
+- compares the hashes of deployed functins and uploads if necessary
 
 we can see the service name is 
 
@@ -86,24 +88,7 @@ sls deploy --stage prod
 
 now we can check the stack again
 
-now lets add another lambda function and expose it with a API gateway endpoint
-
-### WHERE ARE THE DOCS ON THE EVENT OBJECTS
-
-```javascript
-// event.body comes in as a JSON string
-module.exports.add = async (event) => {
-  const {num1, num2} = JSON.parse(event.body)
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      num1,
-      num2,
-      result: num1 + num2
-    }),
-  };
-};
-```
+now lets expose our lambda function with a API gateway endpoint
 
 now we need to add an api gateway event trigger
 in the events we specify what events we want to trigger the function, in this case we just want one api gateway event. we need to specify an array or list, then we specify http, then under that we provide the event properties. specify the path and then because we are sending the data in the request body the method should be post. Lets set cors true which will automatically set the cors headers for the method and also create the options method for the preflight request
@@ -138,14 +123,13 @@ provider:
   timeout: 3
 ```
 
-### DO I NEED TO DISCUSS VPC
-
-Plugins enhance or addon to the core functionality let add serverless offline plugin to run and test the API locally without having to deploy
+Plugins enhance or addon to the core functionality 
+lets add serverless offline plugin to run and test the API locally without having to deploy
 
 ```
 npm init
 
-yarn add -dev serverless-offline
+yarn add --dev serverless-offline
 ```
 add to serverless.yml
 ```
@@ -175,7 +159,7 @@ we set the name as our reference
 we set deletion policy so if the stack gets removed we keep the data. 
 properties sets the table name from the env variable
 then we have attribute definititions. we specify the key attributes to be used for primary and secondary keys.
-for this notes table we can have userid and timestamp as primary key and we can have a global secondary index on the note attribute. so we need to define all these attributes as a list or array
+for this notes table we can have userid and timestamp as primary key and we can have a global secondary index on the note_id. so we need to define all these attributes as a list or array
 - user_id is string
 - timestamp is number
 - note_id is string
@@ -348,7 +332,6 @@ exports.handler = async (event) => {
         item.user_name = util.getUserName(event.headers);
         item.note_id = item.user_id + ':' + uuidv4()
         item.timestamp = moment().unix();
-        item.expires = moment().add(90, 'days').unix();
 
         let data = await dynamodb.put({
             TableName: tableName,
@@ -402,7 +385,6 @@ exports.handler = async (event) => {
         let item = JSON.parse(event.body).Item;
         item.user_id = util.getUserId(event.headers);
         item.user_name = util.getUserName(event.headers);
-        item.expires = moment().add(90, 'days').unix();
 
         let data = await dynamodb.put({
             TableName: tableName,
