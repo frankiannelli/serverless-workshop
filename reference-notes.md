@@ -296,3 +296,136 @@ exports.handler = async (event) => {
 so now lets finish off our add note handler
 - this will be a post route and will receive the user data or item attributes in the http request body
 - now lets capture the user data from the incoming request and store that data as a new item in our dynamo db
+
+
+
+
+
+our final code looks like this
+```javascript
+/**
+ * Route: POST /note
+ */
+
+const AWS = require('aws-sdk');
+AWS.config.update({ region: 'ap-southeast-2' });
+
+const moment = require('moment');
+const uuidv4 = require('uuid/v4');
+const util = require('../util');
+
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+const tableName = process.env.NOTES_TABLE;
+
+exports.handler = async (event) => {
+    try {
+// - we can get the data from the event.body and we need to JSON parse it
+        let item = JSON.parse(event.body).Item;
+// - we can get the user id from the headers(after passing it to the function) and add it to the item
+        item.user_id = util.getUserId(event.headers);
+// - similarly we can do the same thing with the user_name
+        item.user_name = util.getUserName(event.headers);
+// - let also setup a unique id for the notes
+// - we can set the note_id as the user_id concatenated with a colon and a uuid
+// - note_id is the partition key of our global secondary index in the table so adding the primary partition key (the user_id) within this note_id can be helpful if we want to set a fine grained access control on the global secondary index
+        item.note_id = item.user_id + ':' + uuidv4()
+// - lets setup a timestamp aswell and remember we have timestamp setup as the sort key for our table
+        item.timestamp = moment().unix();
+
+// - now to insert this into the table we can call the put method on the document client class
+        let data = await dynamodb.put({
+// - so we pass the table name and the item 
+            TableName: tableName,
+            Item: item
+            // then convert it into a promise
+        }).promise();
+
+        return {
+            statusCode: 200,
+// - the put method does not return anything on sucess so we can simply return the item object
+            body: JSON.stringify(item)
+        };
+    } catch (err) {
+        console.log("Error", err);
+        return {
+            statusCode: err.statusCode ? err.statusCode : 500,
+            headers: util.getResponseHeaders(),
+            body: JSON.stringify({
+                error: err.name ? err.name : "Exception",
+                message: err.message ? err.message : "Unknown error"
+            })
+        };
+    }
+}
+```
+
+
+- now our lambda handlers are going to need appropriate permissions to interact with our dynamo db
+- we can specify IAM roles at the provider level. We can specify the permissions at the function level but first we would have to create the appropriate roles first and then assign their arns inside the function properties. Instead of the we will specify IAM role statements at the provider level. These role statements will be applied to all functions in the file
+
+code is now this
+```yaml
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: ap-southeast-2
+  stage: dev
+  memorySize: 128
+  timeout: 3
+  environment: 
+    NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+# - we can add multiple role statements as an array
+  iamRoleStatements:
+# - we can say effect allow, then the allowed actions so query put and delete
+    - Effect: Allow
+      Action: 
+        - dynamodb:Query
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+# - resource is the arn of our table we 
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
+```
+
+### Add the lambda handlers to serverless.yml
+
+now we are ready to define our lambda functions and the corresponding endpoints
+- we are going to have some functions to define in serverless.yml
+
+```yaml
+functions:
+# - add-note add the handler
+  add-note:
+    handler: handlers/add-note.handler
+# - description
+    description: POST /note
+# - list the events 
+    events:
+# - first http
+      - http:
+# - path note
+          path: note
+# - method post
+          method: post
+          cors: true
+```
+- now we can test the application locally with serverless-offline
+- sls offline
+- if we get a response back it should be good
+- now lets look in the dynamo db table and it should be there
+
+we can test with the following request
+```
+POST localhost:3000/note
+
+headers
+app_user_id - test_user
+app_user_name - Test user
+
+{
+	"Item": {
+		"title": "myfirst note",
+		"content": "4234234234234234",
+    "topics": "some extra data"
+	}
+}
+```

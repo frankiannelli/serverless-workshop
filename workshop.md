@@ -548,9 +548,7 @@ exports.handler = async (event) => {
     }
 }
 ```
-so we can define our resources in our serverless.yml
 
-- first we need serverless-offline
 - now our lambda handlers are going to need appropriate permissions to interact with our dynamo db
 - we can specify IAM roles at the provider level. We can specify the permissions at the function level but first we would have to create the appropriate roles firstand then assign their arns inside the function properties. Instead of the we will specify IAM role statements at the provider level. These role statements will be applied to all functions in the file
 - we can add multiple role statements as an array
