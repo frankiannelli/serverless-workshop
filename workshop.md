@@ -1,11 +1,10 @@
 ### What is serverless
 
 ### notes
+microphone?
 Workshop questions
 Auction result indexer
 Link to boilerplate
-Check the stack after deploying
-Setup aws cli first as a pre
 
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
@@ -25,7 +24,9 @@ sls -v
 lets make an application
 
 ``` 
-mkdir serverless-app && cd "$_"
+mkdir serverless-app 
+
+cd serverless-app
 
 sls create --template aws-nodejs -n frankI-serverless-api
 

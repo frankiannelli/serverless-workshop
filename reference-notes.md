@@ -24,7 +24,9 @@ sls -v
 lets make an application
 
 ``` 
-mkdir serverless-app && cd "$_"
+mkdir serverless-app 
+
+cd serverless-app
 
 sls create --template aws-nodejs -n <your-name-here>-serverless-api
 
