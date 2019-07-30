@@ -217,12 +217,10 @@ no we can go back to finishing the config for the dynamo db
       - AttributeName: timestamp
         KeyType: RANGE
 # then define provisioned throughput:
-#   Readcapacity unit and write capacity
+#   Readcapacity unit and write capacity this is the value of how many reads and writes per second
     ProvisionedThroughput:
       ReadCapacityUnits: 1
       WriteCapacityUnits: 1
-# then define the global secondary indexthen add a list of indexes
-# we only want 1 index note_id-index
 ```
 now lets deploy
 
