@@ -209,6 +209,7 @@ no we can go back to finishing the config for the dynamo db
         AttributeType: N
 # then define the primary key with key schema
 # attribute name is user_id
+# A primary key is consists of a hash key and an optional range key. Hash key is used to select the DynamoDB partition. Partitions are parts of the table data. Range keys are used to sort the items in the partition, if they exist.
     KeySchema:
       - AttributeName: user_id
 # and key type is hash to indicate a partition key

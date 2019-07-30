@@ -1,8 +1,6 @@
 ### What is serverless
 
 ### notes
-learn about primary and secondary key in dynamodb
-learn about the timestamp as a range so we can sort it
 Workshop questions
 Auction result indexer
 Link to boilerplate
