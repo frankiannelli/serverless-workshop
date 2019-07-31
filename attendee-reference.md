@@ -227,7 +227,6 @@ Let's finish off the code
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
-// let's add our packages
 const uuidv4 = require('uuid/v4');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
