@@ -14,6 +14,10 @@ To check the version
 ```
 sls -v
 ``` 
+&nbsp;
+
+&nbsp;
+
 
 ## Let's Start
 
@@ -66,6 +70,7 @@ sls deploy
 &nbsp;
 
 ---
+
 ## Exposing our lambda function
 
 Now let's expose our lambda function with a API gateway endpoint
