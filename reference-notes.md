@@ -42,12 +42,16 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 
 ### Explain the basics
 - So now we have the serverless.yml which defines our application.
-- Define one or more functions in the service
-- Define the provider the service will be deployed to (and the runtime if provided)
-- Define events that trigger each function to execute (e.g. HTTP requests)
-- Define a set of resources (e.g. 1 DynamoDB table) required by the functions in this service
+serverless yaml defines
+- one or more functions in the service
+- the provider the service will be deployed to (and the runtime if provided)
+- events that trigger each function to execute (e.g. HTTP requests)
+- a set of resources (e.g. 1 DynamoDB table) required by the functions in this service
+
 - when we deployThe Serverless Framework translates all syntax in serverless.yml to a single AWS CloudFormation template 
 - zips the functions
+
+lets remove the commented out code
 
 we can see the service name is 
 
