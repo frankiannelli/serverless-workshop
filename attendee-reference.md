@@ -42,9 +42,11 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 Let's deploy this to AWS
 
 ```
-saml2aws login -a default
+saml2aws login
 
 export AWS_PROFILE="domain-sandbox"
+
+aws s3 ls
 
 serverless deploy
 ```

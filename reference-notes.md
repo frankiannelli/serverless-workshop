@@ -69,9 +69,11 @@ ensure that the indentation is correct because the yaml file is sensitive to tha
 lets deploy this
 
 ```
-saml2aws login -a default
+saml2aws login
 
 export AWS_PROFILE="domain-sandbox"
+
+aws s3 ls
 
 serverless deploy
 ```
