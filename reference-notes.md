@@ -2,11 +2,13 @@
 
 ### What is serverless
 
+In february last year I was doing a bootcamp and we had a mentor come in to do talk for the class. Now this guy new his stuff even at that time in the bootcamp only just being exposed to coding I knew this guy was good. So after the talk i had a quick chat to him before he left. and i said to him Michael what is the next important trend in tech. and he said something to me, he said something to me which changed the way i thouhg about coding and i want to share that with you today. see as devs we want to deliver value to our users, and if this is our focus we probably don't want to be provisioining servers and managing scaling. We don't want to build applications and pay for resources that go unsed, we want to be able to make our ideas a reality as quickly as possible. He said to me Frank, serverless
+
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
 Serverless abstracts away the most menial parts of building an application, leaving developers free to actually spend their days coding.
 
-What this means is that developers can single-handedly build apps that handle production-ready traffic. They don’t have to actively manage scaling for their applications. They don't have to provision servers, or pay for resources that go unused. They can just get projects off the ground with small, agile teams.
+and so that is the benefit of the serverless framework. it allows agile teams to move quickly and build production ready services abtracting alot of the work in setting up infrastructure
 
 So today we are going to setup a serverless API to save notes. We will setup lambda functions to save the notes in a dynamodb table and we will expose the lambdas as restful endpoints with API gateway.
 
