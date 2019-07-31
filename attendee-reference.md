@@ -1,23 +1,23 @@
-### What is serverless
+## What is serverless
 
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
-### setup
+### Setup
 
-check everyone is setup
+Installing Serverless framework
 
 ```
 npm install -g serverless
 ```
 
-to check the version
+To check the version
 ```
 sls -v
 ``` 
 
-### start
+## let's Start
 
-lets make a serverless application
+Let's make a serverless application
 
 ``` 
 mkdir serverless-app 
@@ -30,7 +30,7 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 
 ### Deploy
 
-Lets deploy this
+Let's deploy this to AWS
 
 ```
 saml2aws login -a default
@@ -39,6 +39,8 @@ export AWS_PROFILE="domain-sandbox"
 
 serverless deploy
 ```
+
+Now let's login to the console and look at what we setup
 
 ### Remove the stack
 ``` 
@@ -59,10 +61,10 @@ and deploy again
 ```
 sls deploy
 ```
+---
+## Exposing our lambda function
 
-### Expose our lambda function
-
-Now lets expose our lambda function with a API gateway endpoint
+Now let's expose our lambda function with a API gateway endpoint
 
 #### **`serverless.yml`**
 ```yaml
@@ -76,9 +78,13 @@ functions:
           cors: true
 ```
 
-now lets deploy
+now let's deploy
 
-### Specifying congi at the provider level
+`sls deploy`
+
+---
+
+## Specifying config at the provider level
 
 #### **`serverless.yml`**
 ```yaml
@@ -88,10 +94,11 @@ provider:
   memorySize: 128
   timeout: 3
 ```
+---
 
-### Plugins
+## Plugins
 
-Lets add a plugin to test offline
+let's add a plugin to test offline
 
 ```
 npm init -y
@@ -105,18 +112,18 @@ yarn add --dev serverless-offline
 plugins:
   - serverless-offline
 ```
-then run in the terminal
+Then run in the terminal
 ```
 sls offline
 ```
 
-now test on localhost:3000
+Now test on localhost:3000
 
-### Setup dynamoDb
+---
 
-so let setup our dynamo db
+## Setting up a dynamoDb
 
-we are going to do this in serverless.yml
+We setup our dynamo db in serverless.yml
 
 #### **`serverless.yml`**
 ```yaml
@@ -127,8 +134,21 @@ resources:
       DeletionPolicy: Delete
       Properties:
         TableName: ${self:provider.environment.NOTES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: N
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 ```
-Add the environment variable at the provider level
+Let's add environment variable at the provider level
 
 ```yaml
 provider:
@@ -139,46 +159,28 @@ provider:
   environment: 
     NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
 ```
-no we can go back to finishing the config for the dynamo db
-
-```yaml
-    AttributeDefinitions:
-      - AttributeName: user_id
-        AttributeType: S
-      - AttributeName: timestamp
-        AttributeType: N
-    KeySchema:
-      - AttributeName: user_id
-        KeyType: HASH
-      - AttributeName: timestamp
-        KeyType: RANGE
-    ProvisionedThroughput:
-      ReadCapacityUnits: 1
-      WriteCapacityUnits: 1
-```
-now lets deploy
+now let's deploy
 
 `sls deploy`
 
 We can check in AWS console to see the table
 
-### Add the handlers for our functions
+---
 
-Now lets add the handlers to interact with our DB
+## Adding the handlers for our functions
 
-we need to install our dependencies
+Now let's add the handlers to interact with our DB
+
+We need to install our dependencies
 ```
 yarn add aws-sdk moment uuid
 ```
 
-so we can make a directory of handlers
+So we can make a directory of handlers, add the following file
 
-create a handlers directory
+`serverless-app/handlers/add-note.js`
 
-and add the following file
-- add-note.js
-
-then we can write some boilerplate code
+Then we can write some boilerplate code
 
 #### **`handlers/add-note.js`**
 ```javascript
@@ -206,7 +208,7 @@ exports.handler = async (event) => {
     }
 }
 ```
-Lets finish off the code
+Let's finish off the code
 
 #### **`handlers/add-note.js`**
 ```javascript
@@ -217,7 +219,7 @@ Lets finish off the code
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
-// lets add our packages
+// let's add our packages
 const moment = require('moment');
 const uuidv4 = require('uuid/v4');
 
@@ -254,7 +256,9 @@ exports.handler = async (event) => {
     }
 }
 ```
-### Adding IAM permissions
+---
+
+## Adding IAM permissions
 
 Now our lambda handlers are going to need appropriate permissions to interact with our dynamo db
 
@@ -276,10 +280,11 @@ provider:
         - dynamodb:PutItem
       Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 ```
+---
 
-### Add the lambda handlers to serverless.yml
+## Adding the lambda handlers to serverless.yml
 
-now we are ready to define our lambda functions and the corresponding endpoints
+Now we are ready to define our lambda functions and the corresponding endpoints.
 We are going to have some functions to define in serverless.yml
 
 #### **`serverless.yml`**
@@ -294,10 +299,11 @@ functions:
           method: post
           cors: true
 ```
-- now we can test the application locally with serverless-offline
-- sls offline
+Now we can test the application locally with serverless-offline
 
-we can test with the following request
+`sls offline`
+
+We can test with the following request
 ```
 POST localhost:3000/note
 Content-Type: application/json
@@ -311,4 +317,8 @@ Content-Type: application/json
 	}
 }
 ```
+---
+
+## More resources
+
 

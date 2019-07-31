@@ -187,11 +187,37 @@ resources:
       DeletionPolicy: Delete
 # properties sets the table name from the env variable
       Properties:
+      # we need a table name and im going to come back to this
         TableName: ${self:provider.environment.NOTES_TABLE}
-    # Now you can imagine we may want to have different table for development and prod. - So serverless lets us use variables to dyamnically change the values in the config. variables are also great for stroing secret keys 
-    # lets jump up to set some environment variableas
+        # then we have attribute definititions. we specify the key attributes to be used for primary keys.
+  # for this notes table we can have userid and timestamp as primary key. 
+  # so we need to define all these attributes an array
+        AttributeDefinitions:
+    # - user_id is string
+          - AttributeName: user_id
+            AttributeType: S
+    # - timestamp is number
+          - AttributeName: timestamp
+            AttributeType: N
+    # then define the primary key with key schema
+    # attribute name is user_id
+    # A primary key is consists of a hash key and an optional range key. Hash key is used to select the DynamoDB partition. Partitions are parts of the table data. Range keys are used to sort the items in the partition, if they exist.
+        KeySchema:
+          - AttributeName: user_id
+    # and key type is hash to indicate a partition key
+            KeyType: HASH
+    # define the sort key with attribute name timestamp and key type range
+          - AttributeName: timestamp
+            KeyType: RANGE
+    # then define provisioned throughput:
+    #   Readcapacity unit and write capacity this is the value of how many reads and writes per second
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 ```
 ```yaml
+    # Now you can imagine we may want to have different table for development and prod. - So serverless lets us use variables to dyamnically change the values in the config. variables are also great for stroing secret keys 
+    # lets jump up to set some environment variableas
 provider:
   name: aws
   runtime: nodejs10.x
@@ -202,35 +228,6 @@ provider:
   # lets give the table name a parameterized name
   # then we set notes table and self refernce the serverless.yml
     NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
-```
-no we can go back to finishing the config for the dynamo db
-
-```yaml
-# then we have attribute definititions. we specify the key attributes to be used for primary keys.
-  # for this notes table we can have userid and timestamp as primary key. 
-  # so we need to define all these attributes an array
-    AttributeDefinitions:
-# - user_id is string
-      - AttributeName: user_id
-        AttributeType: S
-# - timestamp is number
-      - AttributeName: timestamp
-        AttributeType: N
-# then define the primary key with key schema
-# attribute name is user_id
-# A primary key is consists of a hash key and an optional range key. Hash key is used to select the DynamoDB partition. Partitions are parts of the table data. Range keys are used to sort the items in the partition, if they exist.
-    KeySchema:
-      - AttributeName: user_id
-# and key type is hash to indicate a partition key
-        KeyType: HASH
-# define the sort key with attribute name timestamp and key type range
-      - AttributeName: timestamp
-        KeyType: RANGE
-# then define provisioned throughput:
-#   Readcapacity unit and write capacity this is the value of how many reads and writes per second
-    ProvisionedThroughput:
-      ReadCapacityUnits: 1
-      WriteCapacityUnits: 1
 ```
 now lets deploy
 
