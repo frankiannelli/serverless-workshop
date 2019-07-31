@@ -1,11 +1,9 @@
 ### What is serverless
 
 ### notes
-microphone?
 Workshop questions
 Auction result indexer
 Link to boilerplate
-why use serverless?
 
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
