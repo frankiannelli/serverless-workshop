@@ -43,8 +43,8 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 ### Explain the basics
 - So now we have the serverless.yml which defines our application.
 serverless yaml defines
-- one or more functions in the service
 - the provider the service will be deployed to (and the runtime if provided)
+- one or more functions in the service
 - events that trigger each function to execute (e.g. HTTP requests)
 - a set of resources (e.g. 1 DynamoDB table) required by the functions in this service
 
