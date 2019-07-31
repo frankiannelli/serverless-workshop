@@ -234,7 +234,7 @@ const tableName = process.env.NOTES_TABLE;
 
 exports.handler = async (event) => {
     try {
-        let item = JSON.parse(event.body).Item;
+        let item = JSON.parse(event.body);
         item.note_id = uuidv4()
 
         let data = await dynamodb.put({
@@ -308,14 +308,13 @@ We can test with the following request
 ```
 POST localhost:3000/note
 Content-Type: application/json
+
 {
-	"Item": {
 		"user_id": "id1",
 		"user_name": "name",
 		"title": "my note",
 		"content": "Serverless rocks"
 	}
-}
 ```
 ---
 &nbsp;

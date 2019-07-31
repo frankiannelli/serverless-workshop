@@ -280,7 +280,7 @@ const tableName = process.env.NOTES_TABLE;
 exports.handler = async (event) => {
     try {
 // - we can get the data from the event.body and we need to JSON parse it
-        let item = JSON.parse(event.body).Item;
+        let item = JSON.parse(event.body);
 // - lets setup a unique id for the notes
         item.note_id = uuidv4()
 // - now to insert this into the table we can call the put method on the document client class
@@ -368,14 +368,11 @@ we can test with the following request
 POST localhost:3000/note
 
 {
-	"Item": {
-		"user_id": "id1",
-		"user_name": "name",
-		"title": "my note",
-		"content": "Serverless rocks"
-	}
+	"user_id": "id1",
+	"user_name": "name",
+	"title": "my note",
+	"content": "Serverless rocks"
 }
-
 ```
 
 and we can check in our dynamoDbto make sure that the data is there
