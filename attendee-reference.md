@@ -15,7 +15,7 @@ To check the version
 sls -v
 ``` 
 
-## let's Start
+## Let's Start
 
 Let's make a serverless application
 
@@ -61,6 +61,10 @@ and deploy again
 ```
 sls deploy
 ```
+&nbsp;
+
+&nbsp;
+
 ---
 ## Exposing our lambda function
 
@@ -82,6 +86,10 @@ now let's deploy
 
 `sls deploy`
 
+&nbsp;
+
+&nbsp;
+
 ---
 
 ## Specifying config at the provider level
@@ -94,6 +102,10 @@ provider:
   memorySize: 128
   timeout: 3
 ```
+&nbsp;
+
+&nbsp;
+
 ---
 
 ## Plugins
@@ -118,6 +130,10 @@ sls offline
 ```
 
 Now test on localhost:3000
+
+&nbsp;
+
+&nbsp;
 
 ---
 
@@ -159,11 +175,15 @@ provider:
   environment: 
     NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
 ```
-now let's deploy
+Now let's deploy
 
 `sls deploy`
 
 We can check in AWS console to see the table
+
+&nbsp;
+
+&nbsp;
 
 ---
 
@@ -256,6 +276,10 @@ exports.handler = async (event) => {
     }
 }
 ```
+&nbsp;
+
+&nbsp;
+
 ---
 
 ## Adding IAM permissions
@@ -280,6 +304,10 @@ provider:
         - dynamodb:PutItem
       Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 ```
+&nbsp;
+
+&nbsp;
+
 ---
 
 ## Adding the lambda handlers to serverless.yml
@@ -317,6 +345,10 @@ Content-Type: application/json
 	}
 }
 ```
+&nbsp;
+
+&nbsp;
+
 ---
 
 ## More resources
