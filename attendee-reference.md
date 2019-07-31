@@ -37,7 +37,7 @@ mkdir serverless-app
 
 cd serverless-app
 
-sls create --template aws-nodejs -n <your-name-here>-serverless-api
+sls create --template aws-nodejs -n yourName-serverless-api
 
 ```
 
