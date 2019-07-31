@@ -10,6 +10,8 @@ What this means is that developers can single-handedly build apps that handle pr
 
 So today we are going to setup a serverless API to save notes. We will setup lambda functions to save the notes in a dynamodb table and we will expose the lambdas as restful endpoints with API gateway.
 
+![serverless diagram](./diagram.png)
+
 
 ### Setup
 
