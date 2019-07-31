@@ -414,9 +414,10 @@ POST localhost:3000/note
 		"user_id": "id1",
 		"user_name": "name",
 		"title": "my note",
-		"content": "contenful",
+		"content": "Serverless rocks",
 		"cat": "general"
 	}
 }
+
 ```
 
