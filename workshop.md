@@ -5,6 +5,7 @@ microphone?
 Workshop questions
 Auction result indexer
 Link to boilerplate
+why use serverless?
 
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
@@ -73,6 +74,7 @@ sls remove
 ```
 now make adjustments and deploy again
 
+#### **`serverless.yml`**
 ```yaml
 provider:
   name: aws
@@ -94,6 +96,7 @@ now lets expose our lambda function with a API gateway endpoint
 now we need to add an api gateway event trigger
 in the events we specify what events we want to trigger the function, in this case we just want one api gateway event. we need to specify an array or list, then we specify http, then under that we provide the event properties. specify the path and then because we are sending the data in the request body the method should be post. Lets set cors true which will automatically set the cors headers for the method and also create the options method for the preflight request
 
+#### **`serverless.yml`**
 ```yaml
 functions:
   hello:

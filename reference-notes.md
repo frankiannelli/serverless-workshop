@@ -21,7 +21,7 @@ sls -v
 
 ### start
 
-lets make an application
+lets make a serverless application
 
 ``` 
 mkdir serverless-app 
@@ -65,11 +65,11 @@ ensure that the indentation is correct because the yaml file is sensitive to tha
 lets deploy this
 
 ```
-saml2aws login -a domain-sandbox
+saml2aws login -a default
 
 export AWS_PROFILE="domain-sandbox"
 
-serverless deploy --aws-profile domain-sandbox
+serverless deploy
 ```
 now lets go to aws and look at cloudformation to see what was generated
 
@@ -79,6 +79,7 @@ sls remove
 ```
 now make adjustments and deploy again
 
+#### **`serverless.yml`**
 ```yaml
 provider:
   name: aws
@@ -101,6 +102,7 @@ now lets expose our lambda function with a API gateway endpoint
 
 now we need to add an api gateway event trigger in serverless.yml
 
+#### **`serverless.yml`**
 ```yaml
 functions:
   hello:
@@ -130,6 +132,7 @@ let test the endpoint with postman by sending a get request
 
 so serverless sets some defaults for the functions that we can overide. we can specify common properties at the provider level or at the function level
 
+#### **`serverless.yml`**
 ```yaml
 provider:
   name: aws
@@ -151,14 +154,17 @@ npm init -y
 
 yarn add --dev serverless-offline
 ```
-add to serverless.yml
 
+
+#### **`serverless.yml`**
 ```yaml
 plugins:
   - serverless-offline
 ```
-then run 
-`sls offline`
+then run in the terminal
+```
+sls offline
+```
 
 now test on localhost:3000
 
@@ -168,6 +174,7 @@ so let setup our dynamo db
 
 we are going to do this in serverless.yml
 
+#### **`serverless.yml`**
 ```yaml
 # now lets define the dynamoDB table and we do this in the resources section
 # what goes in this section is raw cloudformation syntax
@@ -241,6 +248,7 @@ so we can make a directory of handlers
 - add-note.js
 - get-notes.js (if we have time)
 
+#### **`handlers/add-note.js`**
 ```javascript
 // lets reference the AWS SDK
 const AWS = require('aws-sdk');
@@ -283,6 +291,7 @@ so now lets finish off our add note handler
 - now lets capture the user data from the incoming request and store that data as a new item in our dynamo db
 
 our final code looks like this
+#### **`handlers/add-note.js`**
 ```javascript
 /**
  * Route: POST /note
@@ -339,11 +348,13 @@ exports.handler = async (event) => {
 }
 ```
 
+### Add IAM roles
 
 - now our lambda handlers are going to need appropriate permissions to interact with our dynamo db
 - we can specify IAM roles at the provider level. We can specify the permissions at the function level but first we would have to create the appropriate roles first and then assign their arns inside the function properties. Instead of the we will specify IAM role statements at the provider level. These role statements will be applied to all functions in the file
 
 code is now this
+#### **`serverless.yml`**
 ```yaml
 provider:
   name: aws
@@ -370,6 +381,7 @@ provider:
 now we are ready to define our lambda functions and the corresponding endpoints
 - we are going to have some functions to define in serverless.yml
 
+#### **`serverless.yml`**
 ```yaml
 functions:
 # - add-note add the handler
