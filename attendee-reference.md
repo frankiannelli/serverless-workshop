@@ -1,5 +1,7 @@
 ## What Is Serverless ⚡️
 
+*from the serverless website*
+
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
 
 Serverless abstracts away the most menial parts of building an application, leaving developers free to actually spend their days coding.
@@ -39,27 +41,9 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 
 ### Deploy 🚀
 
-Let's deploy this to AWS
-
-```
-saml2aws login
-
-export AWS_PROFILE="domain-sandbox"
-
-aws s3 ls
-
-serverless deploy
-```
-
-Now let's login to the console and look at what we setup
-
-### Remove the stack
-
-If we need to remove a stack it's as easy as...
-``` 
-sls remove
-```
 ### Update the region and stage
+
+First we need to update the region we want to deploy to
 
 #### **`serverless.yml`**
 ```yaml
@@ -69,11 +53,18 @@ provider:
   region: ap-southeast-2
   stage: dev
 ```
-and deploy again
+
+Let's deploy this to AWS
 
 ```
-sls deploy
+saml2aws login
+
+export AWS_PROFILE="domain-sandbox"
+
+serverless deploy
 ```
+
+Now let's login to the console and look at what we setup
 
 ---
 &nbsp;
@@ -116,7 +107,9 @@ provider:
 
 ## Plugins 🔌
 
-let's add a plugin to test offline
+Plugins are custom code to add functionality
+
+Let's add a plugin to test our stack offline
 
 ```
 npm init -y
@@ -135,7 +128,7 @@ Then run in the terminal
 sls offline
 ```
 
-Now test on localhost:3000
+Now test on localhost:3000/hello
 
 ---
 &nbsp;
@@ -156,13 +149,9 @@ resources:
         AttributeDefinitions:
           - AttributeName: user_id
             AttributeType: S
-          - AttributeName: timestamp
-            AttributeType: N
         KeySchema:
           - AttributeName: user_id
             KeyType: HASH
-          - AttributeName: timestamp
-            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
@@ -176,7 +165,7 @@ provider:
   memorySize: 128
   timeout: 3
   environment: 
-    NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    NOTES_TABLE: ${self:service}-${self:provider.stage}
 ```
 Now let's deploy
 
@@ -191,18 +180,18 @@ We can check in AWS console to see the table
 
 Now let's add the handlers to interact with our DB
 
+So let's create a file for our function
+
+`add-note.js`
+
 We need to install our dependencies
 ```
-yarn add aws-sdk moment uuid
+yarn add aws-sdk uuid
 ```
-
-So we can make a directory of handlers, add the following file
-
-`serverless-app/handlers/add-note.js`
 
 Then we can write some boilerplate code
 
-#### **`handlers/add-note.js`**
+#### **`add-note.js`**
 ```javascript
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
@@ -221,8 +210,7 @@ exports.handler = async (event) => {
         return {
             statusCode: err.statusCode ? err.statusCode : 500,
             body: JSON.stringify({
-                error: err.name ? err.name : "Exception",
-                message: err.message ? err.message : "Unknown error"
+                message: "error"
             })
         };
     }
@@ -230,7 +218,7 @@ exports.handler = async (event) => {
 ```
 Let's finish off the code
 
-#### **`handlers/add-note.js`**
+#### **`add-note.js`**
 ```javascript
 /**
  * Route: POST /note
@@ -240,7 +228,6 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
 // let's add our packages
-const moment = require('moment');
 const uuidv4 = require('uuid/v4');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
@@ -249,10 +236,7 @@ const tableName = process.env.NOTES_TABLE;
 exports.handler = async (event) => {
     try {
         let item = JSON.parse(event.body).Item;
-        item.user_id = util.getUserId(event.headers);
-        item.user_name = util.getUserName(event.headers);
-        item.note_id = item.user_id + ':' + uuidv4()
-        item.timestamp = moment().unix();
+        item.note_id = uuidv4()
 
         let data = await dynamodb.put({
             TableName: tableName,
@@ -267,10 +251,8 @@ exports.handler = async (event) => {
         console.log("Error", err);
         return {
             statusCode: err.statusCode ? err.statusCode : 500,
-            headers: util.getResponseHeaders(),
             body: JSON.stringify({
-                error: err.name ? err.name : "Exception",
-                message: err.message ? err.message : "Unknown error"
+                message: "error"
             })
         };
     }
@@ -293,11 +275,10 @@ provider:
   memorySize: 128
   timeout: 3
   environment: 
-    NOTES_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    NOTES_TABLE: ${self:service}-${self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action: 
-        - dynamodb:Query
         - dynamodb:PutItem
       Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 ```
@@ -306,8 +287,7 @@ provider:
 
 ## Adding the lambda handlers to serverless.yml
 
-Now we are ready to define our lambda functions and the corresponding endpoints.
-We are going to have some functions to define in serverless.yml
+Now we are ready to define our lambda function and the corresponding endpoint.
 
 #### **`serverless.yml`**
 ```yaml
@@ -334,8 +314,7 @@ Content-Type: application/json
 		"user_id": "id1",
 		"user_name": "name",
 		"title": "my note",
-		"content": "Serverless rocks",
-		"cat": "general"
+		"content": "Serverless rocks"
 	}
 }
 ```
@@ -346,6 +325,9 @@ Content-Type: application/json
 
 ## More resources
 
-[fe-lambda-boilerplate-generator](https://github.com/domain-group/fe-lambda-boilerplate-generator)
+## [Serverless website](https://serverless.com/)
+
+## [fe-lambda-boilerplate-generator](https://github.com/domain-group/fe-lambda-boilerplate-generator)
 
 
+## [Domain auction-results-manager](https://github.com/domain-group/auction-results-manager)
