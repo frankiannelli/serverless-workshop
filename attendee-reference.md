@@ -1,6 +1,11 @@
-## What is serverless
+## What is serverless ⚡️
 
 Serverless is a framework that we use to build, test and deploy serverless applications in a streamlined and standardised manner. One of the good things is that it is provider agnostic, so not only on AWS but azure and google cloud as well.
+
+Serverless abstracts away the most menial parts of building an application, leaving developers free to actually spend their days coding.
+
+What this means is that developers can single-handedly build apps that handle production-ready traffic. They don’t have to actively manage scaling for their applications. They don't have to provision servers, or pay for resources that go unused. They can just get projects off the ground with small, agile teams.
+
 
 ### Setup
 
@@ -17,7 +22,7 @@ sls -v
 ---
 &nbsp;
 
-## Let's Start
+## Let's Start 🛠
 
 Let's make a serverless application
 
@@ -30,7 +35,7 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 
 ```
 
-### Deploy
+### Deploy 🚀
 
 Let's deploy this to AWS
 
@@ -45,6 +50,8 @@ serverless deploy
 Now let's login to the console and look at what we setup
 
 ### Remove the stack
+
+If we need to remove a stack it's as easy as...
 ``` 
 sls remove
 ```
@@ -83,14 +90,14 @@ functions:
           cors: true
 ```
 
-now let's deploy
+Now let's deploy
 
 `sls deploy`
 
 ---
 &nbsp;
 
-## Specifying config at the provider level
+## Specifying config at the provider level ⚙️
 
 #### **`serverless.yml`**
 ```yaml
@@ -103,7 +110,7 @@ provider:
 ---
 &nbsp;
 
-## Plugins
+## Plugins 🔌
 
 let's add a plugin to test offline
 
@@ -129,7 +136,7 @@ Now test on localhost:3000
 ---
 &nbsp;
 
-## Setting up a dynamoDb
+## Setting up a dynamoDb 🗂
 
 We setup our dynamo db in serverless.yml
 
