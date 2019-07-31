@@ -309,12 +309,12 @@ We can test with the following request
 POST localhost:3000/note
 Content-Type: application/json
 
-{
-		"user_id": "id1",
-		"user_name": "name",
-		"title": "my note",
-		"content": "Serverless rocks"
-	}
+    {
+	"user_id": "id1",
+	"user_name": "name",
+	"title": "my note",
+	"content": "Serverless rocks"
+    }
 ```
 ---
 &nbsp;
