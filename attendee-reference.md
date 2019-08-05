@@ -37,7 +37,7 @@ mkdir serverless-app
 
 cd serverless-app
 
-sls create --template aws-nodejs -n <your-name-here>-serverless-api
+sls create --template aws-nodejs -n yourNameHere-serverless-api
 
 ```
 
@@ -45,7 +45,7 @@ sls create --template aws-nodejs -n <your-name-here>-serverless-api
 
 ### Update the region and stage
 
-First we need to update the region we want to deploy to
+First we need to update the region we want to deploy to. Lets add stage and tag info while we are at it
 
 #### **`serverless.yml`**
 ```yaml
@@ -54,6 +54,10 @@ provider:
   runtime: nodejs10.x
   region: ap-southeast-2
   stage: dev
+  stackTags:
+    Application: fe-serverless-alert-buffer
+    Environment: ${self:provider.stage}
+    Team: Kepler
 ```
 
 Let's deploy this to AWS
@@ -66,7 +70,7 @@ export AWS_PROFILE="domain-sandbox"
 serverless deploy
 ```
 
-Now let's login to the console and look at what we setup
+Now let's login to the AWS console and look at what we setup
 
 ---
 &nbsp;
@@ -149,10 +153,10 @@ resources:
       Properties:
         TableName: ${self:provider.environment.NOTES_TABLE}
         AttributeDefinitions:
-          - AttributeName: user_id
+          - AttributeName: note_id
             AttributeType: S
         KeySchema:
-          - AttributeName: user_id
+          - AttributeName: note_id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
@@ -184,7 +188,7 @@ Now let's add the handlers to interact with our DB
 
 So let's create a file for our function
 
-`add-note.js`
+`add-note.js` and `get-notes.js`
 
 We need to install our dependencies
 ```
@@ -218,7 +222,9 @@ exports.handler = async (event) => {
     }
 }
 ```
-Let's finish off the code
+Let's copy this code over to `get-notes.js` and we will finish it later
+
+First let's finish off the code for the add-note handler
 
 #### **`add-note.js`**
 ```javascript
@@ -281,6 +287,7 @@ provider:
     - Effect: Allow
       Action: 
         - dynamodb:PutItem
+        - dynamodb:Query
       Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 ```
 ---
@@ -318,6 +325,84 @@ Content-Type: application/json
 	"content": "Serverless rocks"
     }
 ```
+---
+&nbsp;
+
+## Finishing The get-notes Handler
+
+Now lets finish our get notes handler
+
+#### **`get-notes.js`**
+```javascript
+/**
+ * Route: GET /notes
+ */
+
+const AWS = require('aws-sdk');
+AWS.config.update({ region: 'ap-southeast-2' });
+
+const util = require('../util');
+
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+const tableName = process.env.NOTES_TABLE;
+
+exports.handler = async (event) => {
+    try {
+        let limit = 20;
+        let params = {
+            TableName: tableName,
+            Limit: limit,
+        };
+        let data = await dynamodb.query(params).promise();
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify(data)
+        };
+    } catch (err) {
+       console.log("Error", err);
+        return {
+            statusCode: err.statusCode ? err.statusCode : 500,
+            body: JSON.stringify({
+                message: "error"
+            })
+        };
+    }
+}
+
+```
+
+Now we are ready to define our lambda function and the corresponding endpoint
+Let's define the function in serverless.yml
+
+#### **`serverless.yml`**
+```yaml
+functions:
+  get-notes:
+    handler: get-notes.handler
+    description: GET /note
+    events:
+      - http:
+          path: note
+          method: get
+          cors: true
+```
+
+Now lets test it
+
+```
+GET localhost:3000/notes
+```
+
+### Removing a stack
+
+Removing a stack is easy
+
+```
+sls remove
+```
+
+
 ---
 &nbsp;
 

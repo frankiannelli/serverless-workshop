@@ -38,7 +38,7 @@ mkdir serverless-app
 
 cd serverless-app
 
-sls create --template aws-nodejs -n <your-name-here>-serverless-api
+sls create --template aws-nodejs -n yourNameHere-serverless-api
 
 ```
 
@@ -67,7 +67,7 @@ ensure that the indentation is correct because the yaml file is sensitive to tha
 
 lets deploy this
 
-first we need to update the region
+First we need to update the region we want to deploy to. Lets add stage and tag info while we are at it
 
 #### **`serverless.yml`**
 ```yaml
@@ -76,6 +76,11 @@ provider:
   runtime: nodejs10.x
   region: ap-southeast-2
   stage: dev
+  stackTags:
+    Application: franki-serverless-api
+    # this is a variable to reference our environment
+    Environment: ${self:provider.stage}
+    Team: Kepler
 ```
 now we can login to aws and deploy
 
@@ -122,7 +127,9 @@ if we go to api gateway we should see the new service
 
 let test the endpoint by sending a get request
 
-so serverless sets some defaults for the functions that we can overide. we can specify common properties at the provider level or at the function level
+We can go to cloudwatch logs to see the logs if we are trying to debug the lambda
+
+Now serverless sets some defaults for the functions that we can overide. we can specify common properties at the provider level or at the function level
 
 #### **`serverless.yml`**
 ```yaml
@@ -185,13 +192,13 @@ resources:
   # for this notes table we can have userid as a primary key. 
   # so we need to define all these attributes an array
         AttributeDefinitions:
-    # - user_id is string
-          - AttributeName: user_id
+    # - note_id is string
+          - AttributeName: note_id
             AttributeType: S
     # then define the primary key with key schema
-    # attribute name is user_id
+    # attribute name is note_id
         KeySchema:
-          - AttributeName: user_id
+          - AttributeName: note_id
     # and key type is hash to indicate a partition key
             KeyType: HASH
     # then define provisioned throughput:
@@ -221,8 +228,9 @@ then check its in AWS
 ### Add the handlers
 now lets add the handlers to interact with our DB
 
-lets create a file
+lets create 2 files
 - add-note.js
+- get-notes.js
 
 we need to install our dependencies
 ```
@@ -263,7 +271,9 @@ exports.handler = async (event) => {
 }
 ```
 
-so now lets finish off our add note handler
+Lets copy this code over to `get-notes.js` and we will finish it later
+
+First let's finish off our add note handler
 - this will be a post route and will receive the user data or item attributes in the http request body
 - now lets capture the user data from the incoming request and store that data as a new item in our dynamo db
 
@@ -337,6 +347,7 @@ provider:
     - Effect: Allow
       Action: 
         - dynamodb:PutItem
+        - dynamodb:Query
 # - resource is the arn of our table we 
       Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 ```
@@ -381,5 +392,88 @@ POST localhost:3000/note
 }
 ```
 
-and we can check in our dynamoDbto make sure that the data is there
+and we can check in our dynamoDb to make sure that the data is there
 
+### Add GET notes route
+
+Now lets finish our get notes handler
+
+#### **`get-notes.js`**
+```javascript
+/**
+ * Route: GET /notes
+ */
+
+const AWS = require('aws-sdk');
+AWS.config.update({ region: 'ap-southeast-2' });
+
+const util = require('../util');
+
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+const tableName = process.env.NOTES_TABLE;
+
+exports.handler = async (event) => {
+    try {
+        // then limit is the query or set the default limit to the
+        let limit = 20;
+      // we need to specify params for our query to the db
+        let params = {
+            // so lets specify the table name
+            TableName: tableName,
+            Limit: limit,
+        };
+// - finally we call the query method of the document client class. then return the data in the http response
+        let data = await dynamodb.query(params).promise();
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify(data)
+        };
+    } catch (err) {
+       console.log("Error", err);
+        return {
+            statusCode: err.statusCode ? err.statusCode : 500,
+            body: JSON.stringify({
+                message: "error"
+            })
+        };
+    }
+}
+
+```
+
+now we are ready to define our lambda function and the corresponding endpoint
+Let's define the function in serverless.yml
+
+#### **`serverless.yml`**
+```yaml
+functions:
+# - add-note add the handler
+  get-notes:
+    handler: get-notes.handler
+# - description
+    description: GET /note
+# - list the events 
+    events:
+# - first http
+      - http:
+# - path note
+          path: note
+# - method post
+          method: get
+          cors: true
+```
+
+Now lets test it
+
+```
+GET localhost:3000/notes
+```
+
+### Removing a stack
+
+Removing a stack is easy
+
+```
+sls remove
+```
