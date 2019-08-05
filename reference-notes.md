@@ -407,23 +407,18 @@ Now lets finish our get notes handler
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
-const util = require('../util');
-
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
 
 exports.handler = async (event) => {
     try {
-        // then limit is the query or set the default limit to the
-        let limit = 20;
       // we need to specify params for our query to the db
         let params = {
             // so lets specify the table name
             TableName: tableName,
-            Limit: limit,
         };
 // - finally we call the query method of the document client class. then return the data in the http response
-        let data = await dynamodb.query(params).promise();
+        let data = await dynamodb.scan(params).promise();
 
         return {
             statusCode: 200,
@@ -458,7 +453,7 @@ functions:
 # - first http
       - http:
 # - path note
-          path: note
+          path: notes
 # - method post
           method: get
           cors: true

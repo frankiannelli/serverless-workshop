@@ -55,9 +55,9 @@ provider:
   region: ap-southeast-2
   stage: dev
   stackTags:
-    Application: fe-serverless-alert-buffer
+    Application: yourName-serverless-api
     Environment: ${self:provider.stage}
-    Team: Kepler
+    Team: yourTeam
 ```
 
 Let's deploy this to AWS
@@ -328,7 +328,7 @@ Content-Type: application/json
 ---
 &nbsp;
 
-## Finishing The get-notes Handler
+## Finishing the get-notes handler
 
 Now lets finish our get notes handler
 
@@ -341,19 +341,15 @@ Now lets finish our get notes handler
 const AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-2' });
 
-const util = require('../util');
-
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.NOTES_TABLE;
 
 exports.handler = async (event) => {
     try {
-        let limit = 20;
         let params = {
             TableName: tableName,
-            Limit: limit,
         };
-        let data = await dynamodb.query(params).promise();
+        let data = await dynamodb.scan(params).promise();
 
         return {
             statusCode: 200,
@@ -383,7 +379,7 @@ functions:
     description: GET /note
     events:
       - http:
-          path: note
+          path: notes
           method: get
           cors: true
 ```
