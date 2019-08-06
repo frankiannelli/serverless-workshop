@@ -1,5 +1,14 @@
 ### Welcome
 
+Notes 
+
+Matt questions
+How to know what to write for the resources
+Best practice in planning to build
+
+Eric question
+What are the use cases why would we use it
+
 ### What is serverless
 
 In february last year I was doing a bootcamp and we had a mentor come in to do talk for the class. Now this guy new his stuff even at that time in the bootcamp only just being exposed to coding I knew this guy was good. So after the talk i had a quick chat to him before he left. and i said to him Michael what is the next important trend in tech. and he said something to me, he said something to me which changed the way i thouhg about coding and i want to share that with you today. see as devs we want to deliver value to our users, and if this is our focus we probably don't want to be provisioining servers and managing scaling. We don't want to build applications and pay for resources that go unsed, we want to be able to make our ideas a reality as quickly as possible. He said to me Frank, serverless
